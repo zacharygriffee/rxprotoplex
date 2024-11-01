@@ -24,7 +24,7 @@ console.log(plexStream); // Outputs either the original multiplexed stream or a 
 Creates an Observable that connects to a specified Plex instance with a given ID and configuration.
 
 ```javascript
-connect$(plexInstance, "channelId", { autoConnect: true }).subscribe({
+connect$(plexInstance, "channelId").subscribe({
   next: connection => console.log("Connected to Plex:", connection),
   error: err => console.error("Connection error:", err)
 });
@@ -35,7 +35,7 @@ connect$(plexInstance, "channelId", { autoConnect: true }).subscribe({
 Connects to a specified Plex instance and begins reading from its stream.
 
 ```javascript
-connectAndRead$(plexInstance, "channelId", { autoConnect: true }).subscribe(data => {
+connectAndRead$(plexInstance, "channelId").subscribe(data => {
   console.log("Data from Plex:", data);
 });
 ```
