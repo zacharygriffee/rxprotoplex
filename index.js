@@ -12,9 +12,8 @@ export * from "./lib/withEncoding.js";
 export * from "./lib/withPlex.js";
 export * from "./lib/ofChannel.js";
 export * from "./lib/consumePlexStream.js";
+export * from "./lib/onConnectionAndRead$.js";
 
 // export useful functionalities.
 
 export * from "./lib/get.js";
-export {onConnectionAndRead$} from "./lib/onConnectionAndRead$.js";
-
