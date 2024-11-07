@@ -1,6 +1,6 @@
 {
   "name": "rxprotoplex",
-  "version": "1.0.71",
+  "version": "1.0.8",
   "description": "A utility library for working with Plex-based connections and streams with RxJS operators.",
   "main": "index.js",
   "type": "module",
@@ -8,7 +8,7 @@
     "test": "brittle ./test.js"
   },
   "dependencies": {
-    "@zacharygriffee/protoplex": "^2.2.2",
+    "@zacharygriffee/protoplex": "^2.2.3",
     "b4a": "^1.6.7",
     "compact-encoding": "^2.15.0",
     "duplex-through": "^1.0.2",

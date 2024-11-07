@@ -25,6 +25,15 @@ test("test connection$", async t => {
     p2.connect().end(b4a.from("hello"));
 });
 
+test("has isProtoplex", t => {
+    const [p1,p2] = createPlexPair()
+    t.is(p1.isProtoplex && p2.isProtoplex, true);
+    const socket = p1.connect();
+    t.absent(socket.isProtoplex);
+    t.absent(p1.mux.stream.isProtoplex);
+    socket.destroy();
+})
+
 test("test listenAndConnect$", async t => {
     t.plan(1);
     const [p1, p2] = createPlexPair();
