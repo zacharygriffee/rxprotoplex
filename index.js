@@ -1,4 +1,4 @@
-export * from "./lib/onConnection$.js";
+export * from "./lib/connection$.js";
 export * from "./lib/connectAndSend.js";
 export * from "./lib/withHandshake.js";
 export * from "./lib/tapSend.js";
@@ -12,7 +12,9 @@ export * from "./lib/withEncoding.js";
 export * from "./lib/withPlex.js";
 export * from "./lib/ofChannel.js";
 export * from "./lib/consumePlexStream.js";
-export * from "./lib/onConnectionAndRead$.js";
+export * from "./lib/connectionAndRead$.js";
+export * from "./lib/close$.js";
+export * from "./lib/destroy.js";
 
 // export useful functionalities.
 

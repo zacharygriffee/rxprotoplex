@@ -1,11 +1,13 @@
 # Plex Utilities
 
-This library provides utilities for working with Plex-based connections and streams, enabling functionalities like encoding configuration, multiplexing, event handling, and data transmission.
+This library provides RxJS utilities for working with Plex-based connections and streams, enabling functionalities such as encoding configuration, multiplexing, event handling, and data transmission.
 
 ## Installation
 
+To install the library, run the following command:
+
 ```bash
-    npm i rxprotoplex
+npm install rxprotoplex
 ```
 
 ## Overview of Functions
@@ -19,39 +21,46 @@ const plexStream = asPlex(stream, { someConfig: true });
 console.log(plexStream); // Outputs either the original multiplexed stream or a new Protoplex instance
 ```
 
-### `connect$`
+### `connection$`
 
-Creates an Observable that connects to a specified Plex instance with a given ID and configuration.
+Creates an RxJS Observable that listens for connection events on a specified Plex instance, optionally filtered by channel ID and protocol. The Observable automatically completes when the Plex instance emits a "close" event.
 
 ```javascript
-connect$(plexInstance, "channelId").subscribe({
-  next: connection => console.log("Connected to Plex:", connection),
-  error: err => console.error("Connection error:", err)
+connection$(plexInstance, "channelId", { protocol: "myProtocol" }).subscribe(connection => {
+  console.log("New connection event:", connection);
 });
 ```
 
-### `connectAndRead$`
+> **Note:** `onConnection$` is deprecated. Use `connection$` instead.
 
-Connects to a specified Plex instance and begins reading from its stream.
+### `connectionAndRead$`
+
+Creates an RxJS Observable that listens for connection events on a specified Plex instance, filters connections based on channel ID and protocol if specified, consumes the stream data, and completes automatically when the Plex instance emits a "close" event.
 
 ```javascript
-connectAndRead$(plexInstance, "channelId").subscribe(data => {
-  console.log("Data from Plex:", data);
+connectionAndRead$(plexInstance, "channelId", { protocol: "myProtocol" }).subscribe(event => {
+  console.log("Received data:", event.data);
+  console.log("Stream ID:", event.id);
+  console.log("Protocol:", event.protocol);
 });
 ```
+
+> **Note:** `onConnectionAndRead$` is deprecated. Use `connectionAndRead$` instead.
 
 ### `connectAndSend`
 
-Establishes a one-time connection to a specified Plex channel, sends data, and closes the connection.
+Establishes a one-time connection to a specified Plex channel, sends data, and then closes the connection.
 
 ```javascript
 const sendData = connectAndSend(plexInstance, "channelId", { encoding: "utf-8" });
 sendData("Hello, World!");
 ```
 
+> **Note:** `sendOnce` is deprecated. Use `connectAndSend` instead.
+
 ### `consumePlexStream`
 
-An operator that consumes a Plex stream, transforming each data event into an object with metadata.
+An RxJS operator that consumes a Plex stream, transforming each data event into an object containing metadata.
 
 ```javascript
 source$.pipe(consumePlexStream).subscribe(event => {
@@ -72,7 +81,7 @@ console.log("Plex Pair:", plexPair); // Array of two connected Plex instances
 
 ### `listenAndConnection$`
 
-Listens for incoming connections on a specified channel and returns an Observable for connection events.
+Listens for incoming connections on a specified channel and returns an RxJS Observable for connection events.
 
 ```javascript
 listenAndConnection$(plexInstance, "channelId", { protocol: "myProtocol" }).subscribe(connection => {
@@ -82,7 +91,7 @@ listenAndConnection$(plexInstance, "channelId", { protocol: "myProtocol" }).subs
 
 ### `listenAndConnectionAndRead$`
 
-Listens for incoming connections on a specified channel and consumes the connection stream.
+Listens for incoming connections on a specified channel and consumes the connection stream, providing an Observable that emits data from the connections.
 
 ```javascript
 listenAndConnectionAndRead$(plexInstance, "channelId", { protocol: "myProtocol" }).subscribe(event => {
@@ -102,31 +111,9 @@ source$.pipe(ofChannel({ id: "myChannel", protocol: "myProtocol" })).subscribe(f
 });
 ```
 
-### `onConnection$`
-
-Creates an Observable that listens for connection events on a specified Plex instance and optionally filters connections based on channel ID and protocol.
-
-```javascript
-onConnection$(plexInstance, "channelId", { protocol: "myProtocol" }).subscribe(connection => {
-  console.log("New connection event:", connection);
-});
-```
-
-### `onConnectionAndRead$`
-
-Creates an Observable that listens for connection events on a specified Plex instance, filters connections based on channel ID and protocol if specified, and consumes the stream data.
-
-```javascript
-onConnectionAndRead$(plexInstance, "channelId", { protocol: "myProtocol" }).subscribe(event => {
-  console.log("Received data:", event.data);
-  console.log("Stream ID:", event.id);
-  console.log("Protocol:", event.protocol);
-});
-```
-
 ### `tapSend`
 
-Creates an operator that sends data to a specified Plex channel as a side effect and passes the data through.
+Creates an RxJS operator that sends data to a specified Plex channel as a side effect and passes the data through.
 
 ```javascript
 source$.pipe(tapSend(plexInstance, "myChannel", { encoding: "utf-8" })).subscribe();
@@ -134,7 +121,7 @@ source$.pipe(tapSend(plexInstance, "myChannel", { encoding: "utf-8" })).subscrib
 
 ### `withEncoding`
 
-Creates a new configuration object with specified encoding, merging it with an existing Plex configuration.
+Creates a new configuration object with the specified encoding, merging it with an existing Plex configuration.
 
 ```javascript
 const config = withEncoding("utf-8", { protocol: "myProtocol" });
@@ -163,3 +150,4 @@ await withPlex(newPlexInstance, async () => {
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+
