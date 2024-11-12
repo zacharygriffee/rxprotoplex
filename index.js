@@ -10,6 +10,7 @@ export * from "./lib/asPlex.js";
 export * from "./lib/createPlexPair.js";
 export * from "./lib/withEncoding.js";
 export * from "./lib/withPlex.js";
+export * from "./lib/withTimeout.js";
 export * from "./lib/ofChannel.js";
 export * from "./lib/consumePlexStream.js";
 export * from "./lib/connectionAndRead$.js";
