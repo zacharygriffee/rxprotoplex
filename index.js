@@ -16,6 +16,7 @@ export * from "./lib/consumePlexStream.js";
 export * from "./lib/connectionAndRead$.js";
 export * from "./lib/close$.js";
 export * from "./lib/destroy.js";
+export * from "./lib/encodingFrom.js";
 
 // export useful functionalities.
 
