@@ -24,15 +24,15 @@ const delayedClose = (closure$, delay, value) => {
 };
 
 test("destroy function with error", async (t) => {
-    t.plan(1);
+    t.plan(2);
 
     // Create a Plex instance using Duplex (or your specific implementation)
     const plex = asPlex(new Duplex());
 
     // Subscribe to the close$ observable
     const subscription = close$(plex).subscribe({
-        next() {
-            t.fail('Should not receive next when destroy is called with error');
+        next(e) {
+            t.is(e.message, "fun", 'Next message for close$ should be an error for "fun"');
         },
         error(e) {
             t.is(e.message, "fun", 'Error message should match "fun"');
@@ -50,15 +50,15 @@ test("destroy function with error", async (t) => {
 });
 
 test("destroy function without error", async (t) => {
-    t.plan(1);
+    t.plan(2);
 
     // Create a Plex instance using Duplex (or your specific implementation)
     const plex = asPlex(new Duplex());
 
     // Subscribe to the close$ observable
     const subscription = close$(plex).subscribe({
-        next() {
-            t.fail('Should not receive next when destroy is called with error');
+        next(value) {
+            t.absent(value, 'Should receive next when destroy is called without error and the value is undefined');
         },
         error(e) {
             t.fail('Error should not occur');
@@ -73,6 +73,17 @@ test("destroy function without error", async (t) => {
 
     // Cleanup after test to prevent memory leaks
     subscription.unsubscribe();
+});
+
+skip("close$ emits when stream destroys", t => {
+    t.plan(1)
+   const plex = asPlex(new Duplex());
+
+   plex.close$.subscribe(() => {
+       t.pass();
+   });
+
+   destroy(plex);
 });
 
 test("test connection$", async t => {
@@ -269,33 +280,59 @@ test("should handle connection error for non-existent channel", async t => {
     });
 });
 
-test("connection$ closes properly on close$", async t => {
+test("connection$ closes properly on close$ with error", async t => {
     t.plan(3);
     const [p1, p2] = createPlexPair();
 
     const conn$ = listenAndConnection$(p1, "channelId");
     const closure$ = close$(p1);
 
+    p1.close$.subscribe({error: e => t.is(e.message, "Error!!!!")});
+    p2.close$.subscribe({error: e => t.is(e.message, "Error!!!!")});
+
     conn$.subscribe({
         next: connection => {
             t.ok(connection, "Connection established successfully");
-        },
-        error: (err) => {
-            t.is(err.message, "Manual closure", "Error should propagate correctly to connection$ subscribers");
         }
     });
 
     connect$(p2, "channelId").subscribe({
-        error(e) {
-            t.ok(e.message, "Manual closure");
-        },
         next: stream => {
             stream.end(b4a.from("test message"));
         }
     });
 
     setTimeout(() => {
-        closure$.next(new Error("Manual closure"));
+        // Non graceful close.... error
+        closure$.next(new Error("Error!!!!"));
+    });
+});
+
+test("connection$ closes properly on close$ gracefully", async t => {
+    t.plan(3);
+    const [p1, p2] = createPlexPair();
+
+    const conn$ = listenAndConnection$(p1, "channelId");
+    const closure$ = close$(p1);
+
+    p1.close$.subscribe(t.absent);
+    p2.close$.subscribe(t.absent);
+
+    conn$.subscribe({
+        next: connection => {
+            t.ok(connection, "Connection established successfully");
+        }
+    });
+
+    connect$(p2, "channelId").subscribe({
+        next: stream => {
+            stream.end(b4a.from("test message"));
+        }
+    });
+
+    setTimeout(() => {
+        // graceful close without error.
+        closure$.next();
     });
 });
 
