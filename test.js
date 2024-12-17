@@ -9,13 +9,14 @@ import {
     listenAndConnection$,
     connectAndSend,
     tapSend,
-    connection$, close$, connectionAndRead$, connect$, asPlex, destroy
+    connection$, close$, connectionAndRead$, connect$, asPlex, destroy, encodingFrom
 } from "./index.js";
 import b4a from "b4a";
 import {from, take} from "rxjs";
 import {withTimeout} from "./lib/withTimeout.js";
 import {Duplex} from "streamx";
 import {catchError} from "rxjs/operators";
+import cenc from "compact-encoding";
 // Utility function for delayed closure
 const delayedClose = (closure$, delay, value) => {
     setTimeout(() => {
@@ -238,8 +239,6 @@ test("connect and read", async t => {
     });
 });
 
-
-
 test("should establish multiple connections and exchange messages", async t => {
     t.plan(2); // Expect two successful assertions
     const [p1, p2] = createPlexPair();
@@ -259,6 +258,28 @@ test("should establish multiple connections and exchange messages", async t => {
     // Establish a connection from p2 and send a message
     connect$(p2, "channelId").subscribe(stream => {
         stream.end(b4a.from("test message"));
+        t.pass("Connection successfully established from p2");
+    });
+});
+
+test("should establish connection and exchange empty messages", async t => {
+    t.plan(2);
+    const [p1, p2] = createPlexPair();
+    const conn$ = listenAndConnection$(p1, "channelId");
+
+    conn$.subscribe({
+        next: connection => {
+            connection.on("data", data => {
+                t.ok(b4a.equals(data, b4a.alloc(0)), "Message delivered successfully");
+            });
+        },
+        error: () => t.fail("Error should not occur during connection"),
+        complete: () => t.fail("Complete should not be called in this test")
+    });
+
+    // Establish a connection from p2 and send a message
+    connect$(p2, "channelId").subscribe(stream => {
+        stream.end(b4a.alloc(0));
         t.pass("Connection successfully established from p2");
     });
 });
