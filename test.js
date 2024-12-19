@@ -392,6 +392,29 @@ test("should gracefully shutdown on close$ while messages are exchanged", async 
     }, 100);
 });
 
+test("should establish multiple connections and exchange messages", async t => {
+    t.plan(2); // Expect two successful assertions
+    const [p1, p2] = createPlexPair();
+    const largeData = b4a.from("x".repeat(1024 * 1024));
+    const conn$ = listenAndConnection$(p1, "channelId");
+
+    conn$.subscribe({
+        next: async connection => {
+            for await (const data of connection) t.alike(data, largeData);
+        },
+        error: () => t.fail("Error should not occur during connection"),
+        complete: () => t.fail("Complete should not be called in this test")
+    });
+
+    connectAndSend(p2, "channelId")(largeData);
+
+    // // Establish a connection from p2 and send a message
+    connect$(p2, "channelId").subscribe(stream => {
+        stream.write(b4a.from("x".repeat(1024 * 1024)));
+        // t.pass("Connection successfully established from p2");
+    });
+});
+
 // TODO: trace where the data is left open.
 // solo("should gracefully clean up resources and event listeners after close$", async t => {
 //     t.plan(1);
